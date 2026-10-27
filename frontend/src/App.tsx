@@ -59,7 +59,7 @@ const tabs: Array<{ key: TabKey; label: string; icon: ReactNode }> = [
   { key: 'ai', label: 'AI Insights', icon: <Sparkles className="h-4 w-4" /> },
 ];
 
-const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+const apiBase = import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:3001' : '');
 const emptyResult: AnalysisResponse = { success: false };
 
 const formatNumber = (value: number) => new Intl.NumberFormat('en-US', { notation: value > 99999 ? 'compact' : 'standard' }).format(value);

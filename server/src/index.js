@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { config, isAiConfigured } from './config.js';
 import { fetchRepositorySummary, fetchRepoReadme, fetchRepoManifestFiles, parseRepoInput, validateGithubUrl } from './githubClient.js';
@@ -119,6 +121,21 @@ app.post('/api/ai', asyncHandler(async (req, res) => {
     roadmap: aiFallback.roadmap,
   });
 }));
+
+if (config.nodeEnv === 'production') {
+  const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+  const frontendDist = resolve(projectRoot, 'frontend', 'dist');
+  app.use(express.static(frontendDist));
+  app.get(/.*/, (req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+      return next();
+    }
+
+    return res.sendFile(resolve(frontendDist, 'index.html'), (error) => {
+      if (error) next(error);
+    });
+  });
+}
 
 app.use((error, _req, res, _next) => {
   console.error(error);

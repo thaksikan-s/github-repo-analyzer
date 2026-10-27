@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: github-repo-analyzer
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm --prefix server start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production

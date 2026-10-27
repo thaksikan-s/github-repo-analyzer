@@ -104,6 +104,14 @@ Returns a local AI summary payload when no provider is configured. With a valid 
 
 ## Deployment
 
+### Deploy to Render
+
+Deploy the frontend and API together as a web service using the project's Render Blueprint:
+
+[Deploy GitHub Repo Analyzer](https://render.com/deploy?repo=https://github.com/thaksikan-s/github-repo-analyzer)
+
+Sign in to Render, authorize access to this GitHub repository, and deploy the `github-repo-analyzer` service. Render will provide the public URL when the first deployment is ready. The free service may take a short time to wake up after inactivity. An optional `GITHUB_TOKEN` environment variable can be added in Render to increase GitHub API rate limits.
+
 ### Docker
 
 ```bash

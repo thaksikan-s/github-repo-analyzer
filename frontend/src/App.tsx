@@ -118,6 +118,14 @@ function App() {
         body: JSON.stringify({ repo: value }),
       });
 
+      if (!res.headers.get('content-type')?.includes('application/json')) {
+        if (res.status === 404) {
+          throw new Error('The analysis API was not found. Check that the Vercel project Root Directory is set to the repository root (.) and redeploy so /api requests reach the server.');
+        }
+
+        throw new Error(`The analysis API returned an unexpected response (HTTP ${res.status}). Please check the deployment and try again.`);
+      }
+
       const json = (await res.json()) as AnalysisResponse;
       if (!res.ok || !json.success) {
         throw new Error(json.error || 'Unable to analyze repository');

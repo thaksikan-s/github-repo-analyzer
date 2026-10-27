@@ -67,7 +67,13 @@ const fetchJson = async (url, headers = {}) => {
     if (!res.ok) {
       const payload = await res.text();
       const errorText = payload && payload.length < 500 ? payload : `HTTP ${res.status}`;
-      throw new Error(`GitHub API request failed (${res.status}): ${errorText}`);
+      const rateLimitReset = Number(res.headers.get('x-ratelimit-reset'));
+      const rateLimitRemaining = Number(res.headers.get('x-ratelimit-remaining'));
+      throw Object.assign(new Error(`GitHub API request failed (${res.status}): ${errorText}`), {
+        status: res.status,
+        rateLimitReset: Number.isFinite(rateLimitReset) && rateLimitReset > 0 ? rateLimitReset : undefined,
+        rateLimitRemaining: Number.isFinite(rateLimitRemaining) ? rateLimitRemaining : undefined,
+      });
     }
 
     return res.json();
@@ -78,12 +84,11 @@ const fetchJson = async (url, headers = {}) => {
 
 export const fetchRepositorySummary = async ({ owner, repo }) => {
   const repoData = await fetchJson(`${GH}/repos/${owner}/${repo}`);
-  const [issuesData, languagesData, contributorsData, releasesData, commitActivityData, treeData] = await Promise.all([
+  const [issuesData, languagesData, contributorsData, releasesData, treeData] = await Promise.all([
     fetchJson(`${GH}/repos/${owner}/${repo}/issues?state=all&per_page=100`),
     fetchJson(`${GH}/repos/${owner}/${repo}/languages`),
     fetchJson(`${GH}/repos/${owner}/${repo}/contributors?per_page=10`),
     fetchJson(`${GH}/repos/${owner}/${repo}/releases?per_page=5`),
-    fetchJson(`${GH}/repos/${owner}/${repo}/stats/commit_activity`),
     fetchJson(`${GH}/repos/${owner}/${repo}/git/trees/${repoData.default_branch || 'main'}?recursive=1`),
   ]);
 
@@ -93,13 +98,22 @@ export const fetchRepositorySummary = async ({ owner, repo }) => {
     languages: languagesData,
     contributors: contributorsData,
     releases: releasesData,
-    commitActivity: commitActivityData,
     tree: treeData,
   };
 };
 
 export const fetchRepoReadme = async ({ owner, repo }) => {
-  const readme = await fetchJson(`${GH}/repos/${owner}/${repo}/readme`).catch(() => null);
+  let readme;
+  try {
+    readme = await fetchJson(`${GH}/repos/${owner}/${repo}/readme`);
+  } catch (error) {
+    if (error && typeof error === 'object' && 'status' in error && error.status === 404) {
+      return null;
+    }
+
+    throw error;
+  }
+
   if (!readme) return null;
 
   if (readme.content) {

@@ -1,6 +1,10 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import request from 'supertest';
 import app from './index.js';
+
+const { fetchRepositorySummary } = vi.hoisted(() => ({
+  fetchRepositorySummary: vi.fn(),
+}));
 
 vi.mock('./githubClient.js', () => ({
   parseRepoInput: (value) => {
@@ -11,7 +15,7 @@ vi.mock('./githubClient.js', () => ({
     return { owner, repo };
   },
   validateGithubUrl: (value) => /^https:\/\/github\.com\//i.test(String(value || '')),
-  fetchRepositorySummary: async ({ owner, repo }) => ({
+  fetchRepositorySummary: fetchRepositorySummary.mockImplementation(async ({ owner, repo }) => ({
     repo: {
       full_name: `${owner}/${repo}`,
       name: repo,
@@ -29,7 +33,6 @@ vi.mock('./githubClient.js', () => ({
     languages: { TypeScript: 80, JavaScript: 20 },
     contributors: [{ login: 'alice' }, { login: 'bob' }],
     releases: [{ tag_name: 'v1.0.0' }],
-    commitActivity: [{ total: 10 }],
     tree: { tree: [
       { path: 'README.md', type: 'blob', size: 2200 },
       { path: 'src/index.ts', type: 'blob', size: 1200 },
@@ -37,10 +40,14 @@ vi.mock('./githubClient.js', () => ({
       { path: '.github/workflows/ci.yml', type: 'blob', size: 1200 },
       { path: 'src/index.test.ts', type: 'blob', size: 1400 },
     ] },
-  }),
+  })),
   fetchRepoReadme: async () => ({ path: 'README.md', content: '# Demo\n\nWelcome!\n\nThis project includes docs and tests.' }),
   fetchRepoManifestFiles: async () => [{ path: 'package.json' }],
 }));
+
+beforeEach(() => {
+  fetchRepositorySummary.mockClear();
+});
 
 describe('GitHub repo analyzer API', () => {
   it('health check returns ok', async () => {
@@ -61,5 +68,18 @@ describe('GitHub repo analyzer API', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.repo.name).toBe('octocat/hello-world');
     expect(res.body.health.overall).toBeGreaterThan(0);
+  });
+
+  it('returns a useful rate-limit response with the reset time', async () => {
+    const resetAt = Math.floor(Date.now() / 1000) + 3600;
+    fetchRepositorySummary.mockRejectedValueOnce(Object.assign(new Error('GitHub API rate limit exceeded'), {
+      status: 403,
+      rateLimitReset: resetAt,
+    }));
+
+    const res = await request(app).post('/api/analyze').send({ repo: 'octocat/rate-limited-repo' });
+    expect(res.status).toBe(429);
+    expect(res.body.error).toContain(new Date(resetAt * 1000).toISOString());
+    expect(res.body.error).toContain('server/.env');
   });
 });

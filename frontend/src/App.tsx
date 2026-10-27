@@ -265,33 +265,37 @@ function App() {
                   <div className="mb-4 flex items-center justify-between">
                     <div>
                       <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Health snapshot</p>
-                      <p className="mt-1 text-2xl font-semibold text-white">{analysis.health?.overall ?? 82}/100</p>
+                      <p className="mt-1 text-2xl font-semibold text-white">{analysis.health ? `${analysis.health.overall}/100` : '—'}</p>
                     </div>
-                    <div className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-300">
-                      {analysis.health ? 'Stable' : 'Ready'}
+                    <div className={`rounded-full px-2.5 py-1 text-xs font-medium ${analysis.health ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}>
+                      {analysis.health ? 'Analyzed' : error ? 'Unavailable' : 'Not analyzed'}
                     </div>
                   </div>
                   <div className="space-y-3">
-                    {[{ label: 'Documentation', value: analysis.health?.categories.documentation ?? 88 }, { label: 'Testing', value: analysis.health?.categories.testing ?? 80 }, { label: 'Maintenance', value: analysis.health?.categories.maintenance ?? 84 }].map((item) => (
-                      <div key={item.label}>
-                        <div className="mb-1 flex justify-between text-xs text-slate-300">
-                          <span>{item.label}</span>
-                          <span>{item.value}</span>
+                    {analysis.health ? (
+                      [{ label: 'Documentation', value: analysis.health.categories.documentation }, { label: 'Testing', value: analysis.health.categories.testing }, { label: 'Maintenance', value: analysis.health.categories.maintenance }].map((item) => (
+                        <div key={item.label}>
+                          <div className="mb-1 flex justify-between text-xs text-slate-300">
+                            <span>{item.label}</span>
+                            <span>{item.value}</span>
+                          </div>
+                          <div className="h-2.5 rounded-full bg-slate-800">
+                            <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400" style={{ width: `${item.value}%` }} />
+                          </div>
                         </div>
-                        <div className="h-2.5 rounded-full bg-slate-800">
-                          <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400" style={{ width: `${item.value}%` }} />
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-sm text-slate-400">Run an analysis to see repository health scores.</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    { icon: <Star className="h-4 w-4 text-yellow-300" />, label: 'Stars', value: formatNumber(analysis.repo?.stats.stars ?? 120000) },
-                    { icon: <GitFork className="h-4 w-4 text-sky-300" />, label: 'Forks', value: formatNumber(analysis.repo?.stats.forks ?? 23100) },
-                    { icon: <TrendingUp className="h-4 w-4 text-emerald-300" />, label: 'Issues', value: formatNumber(analysis.repo?.stats.openIssues ?? 330) },
-                    { icon: <Wand2 className="h-4 w-4 text-violet-300" />, label: 'Watchers', value: formatNumber(analysis.repo?.stats.watchers ?? 4800) },
+                    { icon: <Star className="h-4 w-4 text-yellow-300" />, label: 'Stars', value: analysis.repo ? formatNumber(analysis.repo.stats.stars) : '—' },
+                    { icon: <GitFork className="h-4 w-4 text-sky-300" />, label: 'Forks', value: analysis.repo ? formatNumber(analysis.repo.stats.forks) : '—' },
+                    { icon: <TrendingUp className="h-4 w-4 text-emerald-300" />, label: 'Issues', value: analysis.repo ? formatNumber(analysis.repo.stats.openIssues) : '—' },
+                    { icon: <Wand2 className="h-4 w-4 text-violet-300" />, label: 'Watchers', value: analysis.repo ? formatNumber(analysis.repo.stats.watchers) : '—' },
                   ].map((stat) => (
                     <div key={stat.label} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
                       <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-slate-400">{stat.icon}<span>{stat.label}</span></div>
@@ -305,10 +309,10 @@ function App() {
 
           <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {[
-              { label: 'Public repos analyzed', value: '620K+', sub: 'and rising' },
-              { label: 'Detected issues', value: '4.2M', sub: 'suspicious patterns flagged' },
-              { label: 'AI-ready summaries', value: '24/7', sub: 'without exposing keys' },
-              { label: 'Coverage', value: '99.8%', sub: 'of GitHub hosts supported' },
+              { label: 'Repository metadata', value: 'GitHub API', sub: 'Stars, forks, issues, and languages' },
+              { label: 'Project structure', value: 'File tree', sub: 'Important files and repository size' },
+              { label: 'Health checks', value: 'Evidence-based', sub: 'Documentation, tests, and maintenance signals' },
+              { label: 'Dependency signals', value: 'Manifests', sub: 'Common package and lock files' },
             ].map((item) => (
               <div key={item.label} className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
                 <div className="text-3xl font-semibold text-white">{item.value}</div>

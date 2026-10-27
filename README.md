@@ -40,15 +40,17 @@ npm --prefix server install
 
 ### Configure environment variables
 
-Create a `.env` file under the server folder:
+Create `server/.env` to authenticate GitHub API requests. Without a token, GitHub allows only 60 API requests per hour per public IP, which can be shared by multiple users. A fine-grained personal access token with read-only access to public repository metadata, contents, and issues raises the limit. Keep the token local and never commit or share it.
 
 ```env
 PORT=3001
-GITHUB_TOKEN=
+GITHUB_TOKEN=your_fine_grained_token
 AI_PROVIDER=disabled
 AI_API_KEY=
 AI_MODEL=gpt-4o-mini
 ```
+
+The analyzer reports repository metadata, README and file-tree signals, and basic health heuristics; it is not a full source-code or security audit.
 
 ### Run the app
 

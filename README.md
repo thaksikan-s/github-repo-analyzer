@@ -104,6 +104,12 @@ Returns a local AI summary payload when no provider is configured. With a valid 
 
 ## Deployment
 
+### Deploy to Vercel
+
+Vercel's Hobby plan is free for personal, non-commercial projects. Import this GitHub repository at [vercel.com/new](https://vercel.com/new), keep the project root set to the repository root, and deploy. The app serves its frontend and API from the same Vercel URL. Vercel provides a `*.vercel.app` URL after deployment.
+
+The Hobby plan has usage limits. Vercel may change its signup and verification requirements; if it asks for a payment card or a paid upgrade, do not continue.
+
 ### Deploy to Render
 
 Deploy the frontend and API together as a web service using the project's Render Blueprint:

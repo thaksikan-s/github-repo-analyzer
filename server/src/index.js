@@ -142,8 +142,10 @@ app.use((error, _req, res, _next) => {
   res.status(500).json({ error: 'Unexpected server error. Please try again later.' });
 });
 
-app.listen(config.port, () => {
-  console.log(`GitHub Repo Analyzer API listening on http://localhost:${config.port}`);
-});
+if (process.env.VERCEL !== '1') {
+  app.listen(config.port, () => {
+    console.log(`GitHub Repo Analyzer API listening on http://localhost:${config.port}`);
+  });
+}
 
 export default app;

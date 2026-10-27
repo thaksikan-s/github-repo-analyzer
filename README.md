@@ -1,5 +1,7 @@
 # GitHub Repo Analyzer
 
+**Live app:** [github-repo-analyzer-gp6x.vercel.app](https://github-repo-analyzer-gp6x.vercel.app/)
+
 GitHub Repo Analyzer is a full-stack open-source platform for evaluating public repositories, spotting signals of risk, understanding project structure, and generating useful reports for developers and maintainers.
 
 ## Features
@@ -107,6 +109,8 @@ Returns a local AI summary payload when no provider is configured. With a valid 
 ### Deploy to Vercel
 
 Vercel's Hobby plan is free for personal, non-commercial projects. Import this GitHub repository at [vercel.com/new](https://vercel.com/new), keep the project root at the repository root, and deploy. The Vercel configuration builds separate `frontend` (Vite) and `server` (Express) services, routing `/api/*` to the API and other paths to the frontend. Vercel provides a `*.vercel.app` URL after deployment.
+
+The current live deployment is [github-repo-analyzer-gp6x.vercel.app](https://github-repo-analyzer-gp6x.vercel.app/).
 
 The Hobby plan has usage limits. Vercel may change its signup and verification requirements; if it asks for a payment card or a paid upgrade, do not continue.
 
